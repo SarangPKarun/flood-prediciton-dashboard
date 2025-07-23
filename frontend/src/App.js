@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import './App.css';
-import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import FloodMap from "./components/FloodMap";
 
@@ -13,15 +12,14 @@ function App() {
 
   return (
     <div className="app">
-      <Navbar toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
-      <Sidebar isOpen={isSidebarOpen} />
-      <main className={`main-content ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
-        <div className="content">
+      <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar}/>
+      {/* <div className={`main-content ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}> */}
+      <div className={`main-content`}>
           <FloodMap />
-        </div>
-      </main>
+      </div>
     </div>
   );
+
 }
 
 export default App;

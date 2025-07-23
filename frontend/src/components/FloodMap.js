@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { MapContainer, TileLayer, GeoJSON, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, GeoJSON, Marker, Popup, useMap } from "react-leaflet";
 import * as turf from "@turf/turf";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import keralaGeo from "../data/kerala.geojson";
+import keralaGeo from "../data/kerala.geojson"; // Path to Kerala GeoJSON
 
 // Fix marker icon issue
 delete L.Icon.Default.prototype._getIconUrl;
@@ -14,21 +14,27 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
 
+// Custom hook to reposition zoom control
+const SetZoomControlPosition = () => {
+  const map = useMap();
+  useEffect(() => {
+    map.zoomControl.setPosition("bottomright");
+  }, [map]);
+  return null;
+};
+
 const KeralaMap = () => {
   const [kerala, setKerala] = useState(null);
   const [randomPoints, setRandomPoints] = useState([]);
 
-  // Define Kerala map bounds to restrict panning
-  const keralaBounds = [
-    [8.17, 74.85], // Southwest
-    [12.97, 77.5], // Northeast
-  ];
+  // Default center of Kerala
+  const keralaCenter = [10.3, 76.4]; // Adjusted slightly to center Kerala
 
   // Function to generate random points inside the Kerala polygon
   const generateRandomPointsInside = (polygon, count = 50) => {
     const points = [];
 
-    const bbox = turf.bbox(polygon); // bounding box of Kerala
+    const bbox = turf.bbox(polygon);
     let tries = 0;
 
     while (points.length < count && tries < 10000) {
@@ -49,7 +55,7 @@ const KeralaMap = () => {
         setKerala(data);
 
         const polygon =
-          data.type === "FeatureCollection" ? data.features[0] : data; // adjust depending on format
+          data.type === "FeatureCollection" ? data.features[0] : data;
 
         const points = generateRandomPointsInside(polygon, 30);
         setRandomPoints(points);
@@ -59,12 +65,13 @@ const KeralaMap = () => {
   return (
     <div style={{ height: "100%", width: "100%" }}>
       <MapContainer
-        center={[10.5, 76.2]}
-        zoom={7.5}
+        center={keralaCenter}
+        zoom={8} // Fit Kerala in view
         style={{ height: "100%", width: "100%" }}
-        maxBounds={keralaBounds}
-        maxBoundsViscosity={1.0}
+        minZoom={5}
+        maxZoom={17}
       >
+        <SetZoomControlPosition />
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution="© OpenStreetMap"
@@ -75,7 +82,7 @@ const KeralaMap = () => {
             data={kerala}
             style={{
               fillColor: "#228B22",
-              fillOpacity: 0.5,
+              fillOpacity: 0.4,
               color: "#006400",
               weight: 2,
             }}
