@@ -24,8 +24,8 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
 
       <ul className="sidebar-menu">
         <li className="sidebar-item"><a href="#dashboard">Dashboard</a></li>
-        <li className="sidebar-item"><a href="#flood-data">Flood Data</a></li>
-        <li className="sidebar-item"><a href="#alerts">Alerts</a></li>
+        <li className="sidebar-item"><a href="#flood-data">View layers</a></li>
+        <li className="sidebar-item"><a href="#alerts">Predict Flood</a></li>
         <li className="sidebar-item"><a href="#reports">Reports</a></li>
         <li className="sidebar-item"><a href="#settings">Settings</a></li>
       </ul>
