@@ -5,6 +5,8 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import keralaGeo from "../data/kerala.geojson";
 import FeaturePanel from "./FeaturePanel";
+import TiffLayer from './TiffLayer';
+
 
 const SetZoomBottomRight = () => {
   const map = useMap();
@@ -35,7 +37,7 @@ const redIcon = new L.Icon({
   popupAnchor: [0, -32],
 });
 
-const KeralaMap = () => {
+const FloodMap = () => {
   const [kerala, setKerala] = useState(null);
   const [randomPoints, setRandomPoints] = useState([]);
   const [showFeaturePanel, setShowFeaturePanel] = useState(false);
@@ -129,6 +131,8 @@ const KeralaMap = () => {
 
   return (
     <div style={{ height: "100%", width: "100%" }}>
+
+
       <MapContainer
         center={[10.5, 76.2]}
         zoom={7.5}
@@ -141,15 +145,18 @@ const KeralaMap = () => {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution="© OpenStreetMap"
         />
+
+              {/* 🗺️ GeoTIFF Raster Overlay */}
+        <TiffLayer url={process.env.PUBLIC_URL + "/output.tif"} />
         <SetZoomBottomRight />
 
         {kerala && (
           <GeoJSON
             data={kerala}
             style={{
-              fillColor: "#228B22",
-              fillOpacity: 0.5,
-              color: "#006400",
+              // fillColor: "#228B22",
+              fillOpacity: 0,
+              color: "black",
               weight: 2,
             }}
           />
@@ -210,4 +217,4 @@ const KeralaMap = () => {
   );
 };
 
-export default KeralaMap;
+export default FloodMap;

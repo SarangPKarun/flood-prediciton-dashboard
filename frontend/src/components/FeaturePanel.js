@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
+import axios from "axios";
 import "./FeaturePanel.css";
 
 const FeaturePanel = ({
@@ -18,9 +19,41 @@ const FeaturePanel = ({
   topographicWetnessIndex,
   curveNumber,
   rainfallDepth,
-  onPredict,
-  onClose, // 👈 new prop
+  onClose,
 }) => {
+  const [result, setResult] = useState(null); // store prediction result
+  const [loading, setLoading] = useState(false);
+
+  const handlePredict = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.post("http://localhost:5000/api/flood-risk", {
+        location: `${latitude},${longitude}`, // you can customize what you send
+        rainfall,
+        slope,
+        altitude,
+        aspect,
+        curvature,
+        distanceToStream,
+        streamDensity,
+        streamPowerIndex,
+        lulc,
+        sedimentTransportIndex,
+        topographicWetnessIndex,
+        curveNumber,
+        rainfallDepth,
+      });
+
+      // Update result state
+      setResult(res.data);
+    } catch (error) {
+      console.error("Error predicting flood:", error);
+      setResult({ flood_risk: "Error", confidence: 0 });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="feature-panel">
       <div className="feature-panel-header">
@@ -55,9 +88,17 @@ const FeaturePanel = ({
       <div className="feature-row">📊 <strong>Curve Number:</strong> {curveNumber}</div>
       <div className="feature-row">💧 <strong>Rainfall Depth:</strong> {rainfallDepth}</div>
 
-      <button className="predict-btn" onClick={onPredict}>
-        🔮 Predict Flood Risk
+      <button className="predict-btn" onClick={handlePredict} disabled={loading}>
+        {loading ? "Predicting..." : "🔮 Predict Flood Risk"}
       </button>
+
+      {result && (
+        <div className="prediction-result">
+          <hr />
+          <p><strong>Flood Risk:</strong> {result.flood_risk}</p>
+          <p><strong>Confidence:</strong> {result.confidence}</p>
+        </div>
+      )}
     </div>
   );
 };
