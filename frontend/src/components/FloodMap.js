@@ -147,7 +147,7 @@ const FloodMap = () => {
         />
 
               {/* 🗺️ GeoTIFF Raster Overlay */}
-        <TiffLayer url={process.env.PUBLIC_URL + "/output.tif"} />
+        <TiffLayer url={process.env.PUBLIC_URL + "/output_cog.tif"} />
         <SetZoomBottomRight />
 
         {kerala && (
