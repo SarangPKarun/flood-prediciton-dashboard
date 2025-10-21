@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { act, useEffect, useState } from "react";
 import { MapContainer, TileLayer, GeoJSON, Marker, Popup, useMapEvents, useMap } from "react-leaflet";
 import * as turf from "@turf/turf";
 import "leaflet/dist/leaflet.css";
@@ -6,6 +6,7 @@ import L from "leaflet";
 import keralaGeo from "../data/kerala.geojson";
 import FeaturePanel from "./FeaturePanel";
 import TiffLayer from './TiffLayer';
+import axios from "axios";
 
 
 const SetZoomBottomRight = () => {
@@ -37,12 +38,14 @@ const redIcon = new L.Icon({
   popupAnchor: [0, -32],
 });
 
-const FloodMap = () => {
+const FloodMap = ({activeLayer}) => {
   const [kerala, setKerala] = useState(null);
   const [randomPoints, setRandomPoints] = useState([]);
   const [showFeaturePanel, setShowFeaturePanel] = useState(false);
   const [selectedPoint, setSelectedPoint] = useState(null);
 
+  // Backend URL for the layer
+  const [layerUrl, setLayerUrl] = useState(null);
 
 
   // Define Kerala map bounds to restrict panning
@@ -74,20 +77,67 @@ const FloodMap = () => {
   };
 
   // 👇 Add this just above the return()
+  // const MapClickHandler = () => {
+  //   const map = useMapEvents({
+  //     click: (e) => {
+  //       const clickedPoint = turf.point([e.latlng.lng, e.latlng.lat]);
+
+  //       const polygon =
+  //         kerala?.type === "FeatureCollection" ? kerala.features[0] : kerala;
+
+  //       if (turf.booleanPointInPolygon(clickedPoint, polygon)) {
+  //         setSelectedPoint(e.latlng);
+  //         setLatitude(e.latlng.lat.toFixed(6));
+  //         setLongitude(e.latlng.lng.toFixed(6));
+  //         setShowFeaturePanel(true);
+  //         console.log("Clicked inside Kerala at:", e.latlng);
+  //       } else {
+  //         console.log("Clicked outside Kerala");
+  //       }
+  //     },
+  //   });
+
+  //   return null;
+  // };
+
+    // Map click handler
   const MapClickHandler = () => {
     const map = useMapEvents({
-      click: (e) => {
+      click: async (e) => {
         const clickedPoint = turf.point([e.latlng.lng, e.latlng.lat]);
-
-        const polygon =
-          kerala?.type === "FeatureCollection" ? kerala.features[0] : kerala;
+        const polygon = kerala?.type === "FeatureCollection" ? kerala.features[0] : kerala;
 
         if (turf.booleanPointInPolygon(clickedPoint, polygon)) {
           setSelectedPoint(e.latlng);
           setLatitude(e.latlng.lat.toFixed(6));
           setLongitude(e.latlng.lng.toFixed(6));
           setShowFeaturePanel(true);
-          console.log("Clicked inside Kerala at:", e.latlng);
+
+          // Fetch raster values from backend for this point
+          try {
+            const res = await axios.get(`http://localhost:5000/api/raster-value?lat=${e.latlng.lat}&lng=${e.latlng.lng}`);
+            console.log(res)
+            const data = res.data
+            
+            // data should be { layerName1: value1, layerName2: value2, ... }
+            if (data) {
+              setAltitude(data.dem_cog ?? altitude);
+              setSlope(data.slope_cog ?? slope);
+              setAspect(data.aspect_cog ?? aspect);
+              setCurvature(data.profilecurvature_cog ?? curvature);
+              setDistanceToStream(data.diststream_4326 ?? distanceToStream);
+              setStreamDensity(data.streamdensity_cog ?? streamDensity);
+              setStreamPowerIndex(data.spi_cog ?? streamPowerIndex);
+              setLulc(data.lulc_cog ?? lulc);
+              // setSedimentTransportIndex(data.sedimentTransportIndex ?? sedimentTransportIndex);
+              setTopographicWetnessIndex(data.twi_cog ?? topographicWetnessIndex);
+              setCurveNumber(data.curvenumber_cog ?? curveNumber);
+              setRainfallDepth(data.rainfalldepth_cog ?? rainfallDepth);
+            }
+          } catch (err) {
+            console.error("Failed to fetch raster values", err);
+          }
+
         } else {
           console.log("Clicked outside Kerala");
         }
@@ -129,9 +179,34 @@ const FloodMap = () => {
       });
   }, []);
 
-  return (
-    <div style={{ height: "100%", width: "100%" }}>
 
+  // Fetch backend URL for the active layer
+  useEffect(() => {
+    console.log(activeLayer);
+    if (!activeLayer) {
+      setLayerUrl(null);
+      return;
+    }
+
+    const fetchLayerUrl = async () => {
+      try {
+        const res = await axios.get(`http://localhost:5000/api/layer-url/${activeLayer}`);
+        // const data = await res.json();
+        setLayerUrl(res.data.url);
+        console.log(res.data.url)
+      } catch (err) {
+        console.error("Failed to fetch layer URL", err);
+        setLayerUrl(null);
+      }
+    };
+
+    fetchLayerUrl();
+  }, [activeLayer]);
+
+
+  return (
+    <div style={{ height: "100vh", width: "100%" }}>
+      {/* Sidebar for feature selection */}
 
       <MapContainer
         center={[10.5, 76.2]}
@@ -146,8 +221,15 @@ const FloodMap = () => {
           attribution="© OpenStreetMap"
         />
 
-              {/* 🗺️ GeoTIFF Raster Overlay */}
-        <TiffLayer url={process.env.PUBLIC_URL + "/output_cog.tif"} />
+        {/* Load GeoTIFF only if a layer is selected */}
+        {activeLayer ? (
+          <TiffLayer layerName={activeLayer} 
+          url={layerUrl}
+          />
+        ) : (
+          <TiffLayer url={null} />
+        )}
+
         <SetZoomBottomRight />
 
         {kerala && (

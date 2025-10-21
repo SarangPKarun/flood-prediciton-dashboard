@@ -1,12 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './Sidebar.css';
 import logo from "../assets/fullicon.png";
 // import { FaBars } from "react-icons/fa";
-import FloodPredictor from "./FloodPredictor"
 import { Link } from "react-router-dom";
 
 
-const Sidebar = ({ isOpen, toggleSidebar }) => {
+const Sidebar = ({ isOpen, toggleSidebar, features, activeLayer, setActiveLayer }) => {
+  const [layersOpen, setLayersOpen] = useState(false);
+
+  const toggleLayers = () => {
+    setLayersOpen(!layersOpen);
+
+    // If collapsing the main Layers menu, clear the active layer
+    if (layersOpen) setActiveLayer(null);
+  };
+
+
   if (!isOpen) {
     return (
       <button className="expand-btn" onClick={toggleSidebar}>
@@ -26,7 +35,27 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
 
       <ul className="sidebar-menu">
         <li className="sidebar-item"><Link to="/">Dashboard</Link></li>
-        <li className="sidebar-item"><a href="#flood-data">View layers</a></li>
+        
+        {/* Layers collapsible menu */}
+        <li className="sidebar-item">
+          <div className="layer-header" onClick={toggleLayers}>
+            🌍 Layers {layersOpen ? "▲" : "▼"}
+          </div>
+
+          {layersOpen && (
+            <ul className="sublayers">
+              {features.map((f) => (
+                <li
+                  key={f}
+                  className={`sidebar-subitem ${activeLayer === f ? "active" : ""}`}
+                  onClick={() => setActiveLayer(f)}
+                >
+                  {f}
+                </li>
+              ))}
+            </ul>
+          )}
+        </li>
         <li className="sidebar-item"><a href="#alerts">Predict Flood</a></li>
         <li className="sidebar-item"><Link to="/reports">Reports</Link></li>
         <li className="sidebar-item"><Link to="/settings">Settings</Link></li>

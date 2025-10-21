@@ -53,6 +53,14 @@ const FeaturePanel = ({
       setLoading(false);
     }
   };
+  
+
+  const formatValue = (val, unit = "") => {
+    if (val === null || val === undefined || isNaN(val)) return "-";
+    const num = Number(val);
+    return `${num.toFixed(2)}${unit}`;
+  };
+
 
   return (
     <div className="feature-panel">
@@ -75,18 +83,18 @@ const FeaturePanel = ({
         />
       </div>
 
-      <div className="feature-row">🏞️ <strong>Slope:</strong> {slope}°</div>
-      <div className="feature-row">🏔️ <strong>Altitude:</strong> {altitude} m</div>
-      <div className="feature-row">🧭 <strong>Aspect:</strong> {aspect}°</div>
-      <div className="feature-row">📐 <strong>Curvature:</strong> {curvature}</div>
-      <div className="feature-row">🌊 <strong>Distance to Stream:</strong> {distanceToStream} m</div>
-      <div className="feature-row">📏 <strong>Stream Density:</strong> {streamDensity}</div>
-      <div className="feature-row">⚡ <strong>Stream Power Index:</strong> {streamPowerIndex}</div>
-      <div className="feature-row">🌿 <strong>LULC:</strong> {lulc}</div>
-      <div className="feature-row">🪨 <strong>Sediment Transport Index:</strong> {sedimentTransportIndex}</div>
-      <div className="feature-row">💧 <strong>Topographic Wetness Index:</strong> {topographicWetnessIndex}</div>
-      <div className="feature-row">📊 <strong>Curve Number:</strong> {curveNumber}</div>
-      <div className="feature-row">💧 <strong>Rainfall Depth:</strong> {rainfallDepth}</div>
+   <div className="feature-row">🏞️ <strong>Slope:</strong> {formatValue(slope, "°")}</div>
+<div className="feature-row">🏔️ <strong>Altitude:</strong> {formatValue(altitude, " m")}</div>
+<div className="feature-row">🧭 <strong>Aspect:</strong> {formatValue(aspect, "°")}</div>
+<div className="feature-row">📐 <strong>Curvature:</strong> {formatValue(curvature)}</div>
+<div className="feature-row">🌊 <strong>Distance to Stream:</strong> {formatValue(distanceToStream, " m")}</div>
+<div className="feature-row">📏 <strong>Stream Density:</strong> {formatValue(streamDensity)}</div>
+<div className="feature-row">⚡ <strong>Stream Power Index:</strong> {formatValue(streamPowerIndex)}</div>
+<div className="feature-row">🌿 <strong>LULC:</strong> {formatValue(lulc)}</div>
+<div className="feature-row">🪨 <strong>Sediment Transport Index:</strong> {formatValue(sedimentTransportIndex)}</div>
+<div className="feature-row">💧 <strong>Topographic Wetness Index:</strong> {formatValue(topographicWetnessIndex)}</div>
+<div className="feature-row">📊 <strong>Curve Number:</strong> {formatValue(curveNumber)}</div>
+<div className="feature-row">💧 <strong>Rainfall Depth:</strong> {formatValue(rainfallDepth)}</div>
 
       <button className="predict-btn" onClick={handlePredict} disabled={loading}>
         {loading ? "Predicting..." : "🔮 Predict Flood Risk"}
